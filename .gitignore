@@ -1,0 +1,39 @@
+# ===== 通用 =====
+.DS_Store
+Thumbs.db
+*.log
+logs/
+
+# ===== 前端 (test) =====
+test/node_modules/
+test/dist/
+test/dist-ssr/
+test/.vite/
+test/*.local
+# 本地环境变量（如含敏感信息，不入库）
+test/.env.local
+test/.env.*.local
+
+# ===== 后端 (testBack) =====
+testBack/target/
+testBack/.mvn/
+!testBack/.mvn/wrapper/maven-wrapper.jar
+testBack/*.iml
+
+# H2 本地数据库文件
+testBack/*.mv.db
+testBack/*.trace.db
+personal_site.mv.db
+personal_site.trace.db
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ===== CodeBuddy 本地数据（按需，如需共享自动化/计划可移除此行） =====
+.codebuddy/
