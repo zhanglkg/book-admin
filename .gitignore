@@ -3,6 +3,8 @@
 Thumbs.db
 *.log
 logs/
+# 部署用环境变量（含 RDS 密码/JWT 密钥，绝不入库；.env.example 可入库）
+.env
 
 # ===== 前端 (test) =====
 test/node_modules/
