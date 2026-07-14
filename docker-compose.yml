@@ -1,20 +1,37 @@
-# 在阿里云 Ubuntu 服务器上一键部署：后端(Spring Boot) + 前端(Nginx)
-# 数据库使用阿里云 RDS MySQL（外部托管），请在仓库根目录 .env 中配置以下变量：
-#   DB_URL        jdbc:mysql://<RDS内网地址>:3306/book_admin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-#   DB_USERNAME   RDS 高权限账号
-#   DB_PASSWORD   RDS 账号密码
-#   JWT_SECRET    强随机密钥（如：openssl rand -base64 48）
+# 在阿里云 Ubuntu 服务器上一键部署：MySQL + 后端(Spring Boot) + 前端(Nginx)
+# 数据库使用 compose 自带的 MySQL 容器，数据持久化在 db-data 卷中。
+# 可在仓库根目录 .env 覆盖 DB_PASSWORD / JWT_SECRET（建议生产环境设置强值）。
 # 用法：在仓库根目录执行  docker compose up -d --build
 services:
+  db:
+    image: mysql:8.0
+    container_name: bookadmin-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-bookadmin123}
+      MYSQL_DATABASE: book_admin
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD:-bookadmin123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   backend:
     build: ./testBack
     container_name: bookadmin-backend
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       PORT: "8080"
-      DB_URL: "${DB_URL}"
-      DB_USERNAME: "${DB_USERNAME}"
-      DB_PASSWORD: "${DB_PASSWORD}"
-      JWT_SECRET: "${JWT_SECRET}"
+      DB_URL: "jdbc:mysql://db:3306/book_admin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false"
+      DB_USERNAME: "root"
+      DB_PASSWORD: ${DB_PASSWORD:-bookadmin123}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
     # 仅对内部网络暴露，外面通过前端 nginx(80) 访问
     expose:
       - "8080"
@@ -28,3 +45,6 @@ services:
     ports:
       - "80:80"
     restart: unless-stopped
+
+volumes:
+  db-data:
