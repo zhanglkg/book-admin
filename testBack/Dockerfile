@@ -1,5 +1,7 @@
 # ---- 构建阶段 ----
 FROM maven:3.9-eclipse-temurin-17 AS build
+# 2G 小内存机器限制 Maven 堆，避免构建时 OOM 被 kill
+ENV MAVEN_OPTS="-Xmx1024m"
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
