@@ -1,14 +1,16 @@
 server:
-  port: 8080
+  # 云平台可注入 PORT；本地/容器默认 8080
+  port: ${PORT:8080}
   servlet:
-    # 与前端 Vite 代理(/api -> http://localhost:8080)保持一致,接口路径与前端完全一致
+    # 与前端 Vite 代理(/api -> http://localhost:8080)保持一致
     context-path: /api
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/book_admin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
-    username: root
-    password: root
+    # 部署时通过环境变量 DB_URL 覆盖（如指向容器/云数据库服务名或 RDS 地址）
+    url: "${DB_URL:jdbc:mysql://localhost:3306/book_admin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}"
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   # 首次启动自动建表 + 写入演示数据 (schema/data 使用 IF NOT EXISTS / INSERT IGNORE,可重复启动)
   sql:
@@ -33,7 +35,7 @@ mybatis-plus:
       id-type: auto
 
 jwt:
-  # 生产环境请替换为足够长且随机的密钥
-  secret: "book-admin-secret-key-please-change-in-production-1234567890"
+  # 生产环境务必通过环境变量 JWT_SECRET 替换为足够长且随机的密钥
+  secret: ${JWT_SECRET:book-admin-secret-key-please-change-in-production-1234567890}
   # 过期时间(小时)
-  expire: 24
+  expire: ${JWT_EXPIRE:24}

@@ -31,9 +31,12 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # 部署到 GitHub Pages 子路径 /book-admin/，并使用本地 Mock 演示数据
+          # 部署到 GitHub Pages 子路径 /book-admin/
           VITE_BASE: /book-admin/
-          VITE_USE_MOCK: 'true'
+          # 默认使用本地 Mock 演示数据；在仓库 Settings -> Variables 设置
+          # VITE_USE_MOCK=false 并 BACKEND_API_URL=https://<你的后端地址>/api 即可切换真实后端
+          VITE_USE_MOCK: ${{ vars.VITE_USE_MOCK || 'true' }}
+          VITE_API_BASE_URL: ${{ vars.BACKEND_API_URL || '/api' }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
