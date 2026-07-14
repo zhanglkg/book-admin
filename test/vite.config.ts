@@ -4,6 +4,8 @@ import { fileURLToPath, URL } from 'node:url';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // GitHub Pages 部署到子路径 /book-admin/ 时由 CI 注入 VITE_BASE；本地开发保持 '/'
+  base: process.env.VITE_BASE || '/',
   plugins: [react()],
   resolve: {
     alias: {
