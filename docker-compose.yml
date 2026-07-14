@@ -1,0 +1,48 @@
+# 在阿里云 Ubuntu 服务器上一键部署：MySQL + 后端(Spring Boot) + 前端(Nginx)
+# 用法：在仓库根目录执行  docker compose up -d --build
+services:
+  db:
+    image: mysql:8.0
+    container_name: bookadmin-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-bookadmin123}
+      MYSQL_DATABASE: book_admin
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD:-bookadmin123}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./testBack
+    container_name: bookadmin-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: "8080"
+      DB_URL: "jdbc:mysql://db:3306/book_admin?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false"
+      DB_USERNAME: "root"
+      DB_PASSWORD: ${DB_PASSWORD:-bookadmin123}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+    # 仅对内部网络暴露，外面通过前端 nginx(80) 访问
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  frontend:
+    build: ./test
+    container_name: bookadmin-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+volumes:
+  db-data:
